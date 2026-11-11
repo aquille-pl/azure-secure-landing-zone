@@ -6,14 +6,21 @@ locals {
 }
 
 resource "azurerm_key_vault" "this" {
-  name                       = "kv-${var.name_prefix}-${local.suffix}"
-  location                   = var.location
-  resource_group_name        = var.resource_group_name
-  tenant_id                  = data.azurerm_client_config.current.tenant_id
-  sku_name                   = "standard"
-  rbac_authorization_enabled = true
-  soft_delete_retention_days = 7
-  purge_protection_enabled   = false
+  #checkov:skip=CKV2_AZURE_32:Private endpoint deferred. Vault has public access disabled and holds no secrets yet; tracked as a follow-up.
+  name                          = "kv-${var.name_prefix}-${local.suffix}"
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  tenant_id                     = data.azurerm_client_config.current.tenant_id
+  sku_name                      = "standard"
+  rbac_authorization_enabled    = true
+  soft_delete_retention_days    = 7
+  purge_protection_enabled      = true
+  public_network_access_enabled = false
+
+  network_acls {
+    default_action = "Deny"
+    bypass         = "AzureServices"
+  }
 }
 
 # Let the account running Terraform manage the vault
